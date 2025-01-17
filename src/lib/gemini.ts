@@ -9,7 +9,7 @@ export async function analyzeImage(file: File): Promise<{
   fat: number;
 }> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const imageData = await fileToGenerativePart(file);
     const prompt = "Analyze this food image and provide the nutritional information. Return ONLY a JSON object with these exact keys: calories (number), protein (grams), carbs (grams), fat (grams). For example: {\"calories\": 300, \"protein\": 20, \"carbs\": 30, \"fat\": 10}";
