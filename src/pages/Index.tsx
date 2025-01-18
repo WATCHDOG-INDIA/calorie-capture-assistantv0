@@ -6,6 +6,9 @@ import { toast } from '@/components/ui/use-toast';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface NutritionInfo {
   calories: number;
@@ -15,6 +18,7 @@ interface NutritionInfo {
 }
 
 const Index = () => {
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [nutritionInfo, setNutritionInfo] = useState<NutritionInfo | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -23,6 +27,19 @@ const Index = () => {
   useEffect(() => {
     fetchHistory();
   }, []);
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+      });
+    } else {
+      navigate('/auth');
+    }
+  };
 
   const fetchHistory = async () => {
     const { data, error } = await supabase
@@ -97,9 +114,19 @@ const Index = () => {
   return (
     <div className="min-h-screen p-8 bg-gray-50">
       <div className="max-w-4xl mx-auto space-y-8">
-        <h1 className="text-4xl font-bold text-center text-gray-900">
-          Meal Nutrition Analyzer
-        </h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-4xl font-bold text-gray-900">
+            Meal Nutrition Analyzer
+          </h1>
+          <Button
+            variant="outline"
+            onClick={handleLogout}
+            className="flex items-center gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
+        </div>
         
         <div className="space-y-8">
           <ImageUpload onImageSelect={handleImageSelect} />
