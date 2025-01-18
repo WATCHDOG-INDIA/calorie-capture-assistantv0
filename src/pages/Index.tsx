@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import ImageUpload from '@/components/ImageUpload';
 import NutritionCard from '@/components/NutritionCard';
 import { analyzeImage } from '@/lib/gemini';
@@ -21,13 +21,8 @@ const Index = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [history, setHistory] = useState<Tables<'meal_analysis_history'>[]>([]);
   
-  // Sound effects
   const [playSuccess] = useSound('/sounds/success.mp3');
   const [playAnalyzing] = useSound('/sounds/analyzing.mp3');
-
-  useEffect(() => {
-    fetchHistory();
-  }, []);
 
   const fetchHistory = async () => {
     const { data, error } = await supabase
@@ -48,11 +43,11 @@ const Index = () => {
     setHistory(data);
   };
 
-  const saveAnalysis = async (imageUrl: string, nutrition: NutritionInfo) => {
+  const saveAnalysis = async (nutrition: NutritionInfo) => {
     const { error } = await supabase
       .from('meal_analysis_history')
       .insert({
-        image_url: imageUrl,
+        image_url: 'placeholder.svg', // Using a placeholder instead of actual image
         calories: nutrition.calories,
         protein: nutrition.protein,
         carbs: nutrition.carbs,
@@ -82,12 +77,12 @@ const Index = () => {
       const nutrition = await analyzeImage(file);
       setNutritionInfo(nutrition);
       
-      await saveAnalysis(imageUrl, nutrition);
+      await saveAnalysis(nutrition);
       
       playSuccess();
       toast({
         title: "Analysis Complete",
-        description: "Your meal has been analyzed and saved successfully!",
+        description: "Your meal has been analyzed successfully!",
       });
     } catch (error) {
       console.error('Error analyzing image:', error);
@@ -104,23 +99,16 @@ const Index = () => {
   return (
     <div className="min-h-screen p-8 bg-gradient-to-b from-gray-50 to-gray-100">
       <div className="max-w-4xl mx-auto space-y-8">
-        <div className="flex items-center justify-center gap-4 animate-fade-in">
-          <img 
-            src="/lovable-uploads/3710c80d-1a32-46c8-92f5-9a470c1c6ae4.png" 
-            alt="BE.FIT.AI Logo" 
-            className="h-20 w-auto hover:scale-105 transition-transform duration-300"
-          />
-          <div className="text-center">
-            <h1 className="text-5xl font-bold text-gray-900 tracking-tight">
-              BE.FIT.AI
-            </h1>
-            <p className="text-lg text-gray-600 mt-2">
-              Intelligent Meal Nutrition Analysis
-            </p>
-          </div>
+        <div className="text-center">
+          <h1 className="text-5xl font-bold text-gray-900 tracking-tight">
+            BE.FIT.AI
+          </h1>
+          <p className="text-lg text-gray-600 mt-2">
+            Intelligent Meal Nutrition Analysis
+          </p>
         </div>
         
-        <div className="space-y-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+        <div className="space-y-8 animate-fade-in">
           <ImageUpload onImageSelect={handleImageSelect} />
           
           {selectedImage && (
@@ -147,20 +135,14 @@ const Index = () => {
           )}
 
           {history.length > 0 && (
-            <div className="mt-12 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <div className="mt-12 animate-fade-in">
               <h2 className="text-3xl font-semibold mb-6 text-center">Analysis History</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {history.map((item, index) => (
+                {history.map((item) => (
                   <Card 
                     key={item.id} 
                     className="p-4 space-y-4 transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
-                    style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    <img
-                      src={item.image_url}
-                      alt="Historical meal"
-                      className="w-full h-48 object-cover rounded-lg shadow-md"
-                    />
                     <NutritionCard
                       nutrition={{
                         calories: item.calories || 0,
