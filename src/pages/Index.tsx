@@ -97,9 +97,16 @@ const Index = () => {
   return (
     <div className="min-h-screen p-8 bg-gray-50">
       <div className="max-w-4xl mx-auto space-y-8">
-        <h1 className="text-4xl font-bold text-gray-900">
-          Meal Nutrition Analyzer
-        </h1>
+        <div className="flex items-center justify-center gap-4">
+          <img 
+            src="/lovable-uploads/2e9e19c3-7641-45e7-b5f7-72ba2176e4bc.png" 
+            alt="Fitness Logo" 
+            className="h-16 w-auto"
+          />
+          <h1 className="text-4xl font-bold text-gray-900">
+            Meal Nutrition Analyzer
+          </h1>
+        </div>
         
         <div className="space-y-8">
           <ImageUpload onImageSelect={handleImageSelect} />
