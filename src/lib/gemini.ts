@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 async function getGeminiKey() {
   const { data, error } = await supabase.rpc('get_secret', {
-    name: 'GEMINI_API_KEY'
+    secret_name: 'GEMINI_API_KEY'
   });
   
   if (error || !data?.[0]?.secret) {
