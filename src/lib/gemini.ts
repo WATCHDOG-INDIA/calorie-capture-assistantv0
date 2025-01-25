@@ -1,17 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { supabase } from "@/integrations/supabase/client";
 
 async function getGeminiKey() {
-  const { data, error } = await supabase.rpc('get_secret', {
-    name: 'GEMINI_API_KEY'
-  });
-  
-  if (error || !data?.[0]?.secret) {
-    console.error('Error fetching Gemini API key:', error);
-    throw new Error('Failed to fetch Gemini API key');
-  }
-  
-  return data[0].secret;
+  // Note: In a production environment, never store API keys directly in code
+  return 'YOUR_GEMINI_API_KEY_HERE';
 }
 
 export async function analyzeImage(file: File): Promise<{
