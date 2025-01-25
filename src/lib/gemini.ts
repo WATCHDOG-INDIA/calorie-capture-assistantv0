@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 async function getGeminiKey() {
   // Note: In a production environment, never store API keys directly in code
-  return 'YOUR_GEMINI_API_KEY_HERE';
+  return 'AIzaSyDJC5a7TvxMBzqBwvuW5sDxfbpNVn0JVBw';
 }
 
 export async function analyzeImage(file: File): Promise<{
