@@ -1,6 +1,18 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { supabase } from "@/integrations/supabase/client";
 
-const genAI = new GoogleGenerativeAI("AIzaSyByz6BrqfYIpyP5J4B0HrtOqHFEIZVkJRg");
+async function getGeminiKey() {
+  const { data, error } = await supabase.rpc('get_secret', {
+    name: 'GEMINI_API_KEY'
+  });
+  
+  if (error || !data?.[0]?.secret) {
+    console.error('Error fetching Gemini API key:', error);
+    throw new Error('Failed to fetch Gemini API key');
+  }
+  
+  return data[0].secret;
+}
 
 export async function analyzeImage(file: File): Promise<{
   calories: number;
@@ -9,6 +21,9 @@ export async function analyzeImage(file: File): Promise<{
   fat: number;
 }> {
   try {
+    const apiKey = await getGeminiKey();
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const imageData = await fileToGenerativePart(file);
