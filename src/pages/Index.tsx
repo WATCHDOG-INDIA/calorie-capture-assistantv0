@@ -104,7 +104,7 @@ const Index = () => {
           <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 p-3 rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300">
             <Sparkles className="w-6 h-6 text-purple-500 animate-pulse" />
             <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
-              BE.FIT.AI
+              Caloriescount.AI
             </h1>
             <Sparkles className="w-6 h-6 text-purple-500 animate-pulse" />
           </div>
