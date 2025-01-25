@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import useSound from 'use-sound';
+import { Sparkles } from 'lucide-react';
 
 interface NutritionInfo {
   calories: number;
@@ -97,34 +98,40 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen p-8 bg-gradient-to-b from-gray-50 to-gray-100">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <div className="text-center">
-          <h1 className="text-5xl font-bold text-gray-900 tracking-tight">
-            BE.FIT.AI
-          </h1>
-          <p className="text-lg text-gray-600 mt-2">
-            Intelligent Meal Nutrition Analysis
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-500">
+      <div className="max-w-4xl mx-auto p-8 space-y-12">
+        <div className="text-center space-y-4 animate-fade-in">
+          <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 p-3 rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300">
+            <Sparkles className="w-6 h-6 text-purple-500 animate-pulse" />
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
+              BE.FIT.AI
+            </h1>
+            <Sparkles className="w-6 h-6 text-purple-500 animate-pulse" />
+          </div>
+          <p className="text-lg text-gray-600 dark:text-gray-300 animate-fade-in delay-200">
+            Discover the nutritional secrets of your meals with AI
           </p>
         </div>
         
-        <div className="space-y-8 animate-fade-in">
-          <ImageUpload onImageSelect={handleImageSelect} />
+        <div className="space-y-8">
+          <div className="transform hover:scale-105 transition-all duration-300">
+            <ImageUpload onImageSelect={handleImageSelect} />
+          </div>
           
           {selectedImage && (
-            <Card className="p-6 transform transition-all duration-500 hover:shadow-lg animate-scale-in">
+            <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm transform transition-all duration-500 hover:shadow-xl animate-scale-in">
               <img
                 src={selectedImage}
                 alt="Selected meal"
-                className="w-full max-w-md mx-auto rounded-lg shadow-lg"
+                className="w-full max-w-md mx-auto rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300"
               />
             </Card>
           )}
           
           {isAnalyzing && (
             <div className="text-center animate-fade-in">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-4 text-gray-600">Analyzing your meal...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
+              <p className="mt-4 text-gray-600 dark:text-gray-300">Analyzing your meal with AI magic...</p>
             </div>
           )}
           
@@ -135,13 +142,16 @@ const Index = () => {
           )}
 
           {history.length > 0 && (
-            <div className="mt-12 animate-fade-in">
-              <h2 className="text-3xl font-semibold mb-6 text-center">Analysis History</h2>
+            <div className="mt-16 animate-fade-in">
+              <h2 className="text-3xl font-semibold mb-8 text-center bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
+                Your Meal History
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {history.map((item) => (
+                {history.map((item, index) => (
                   <Card 
                     key={item.id} 
-                    className="p-4 space-y-4 transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                    className="p-4 space-y-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm transform transition-all duration-300 hover:scale-105 hover:shadow-xl animate-fade-in"
+                    style={{ animationDelay: `${index * 100}ms` }}
                   >
                     <NutritionCard
                       nutrition={{
@@ -151,7 +161,7 @@ const Index = () => {
                         fat: item.fat || 0,
                       }}
                     />
-                    <p className="text-sm text-gray-500 text-center">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
                       {new Date(item.created_at).toLocaleDateString()}
                     </p>
                   </Card>
