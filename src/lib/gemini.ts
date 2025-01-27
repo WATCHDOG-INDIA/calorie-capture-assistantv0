@@ -20,6 +20,7 @@ export async function analyzeImage(file: File): Promise<{
     const imageData = await fileToGenerativePart(file);
     const prompt = "You are a nutritionist analyzing this food image. Provide ONLY a valid JSON object with these exact numeric keys: calories, protein, carbs, fat (all as numbers). Example: {\"calories\": 300, \"protein\": 20, \"carbs\": 30, \"fat\": 10}. No other text or explanation.";
 
+    console.log('Sending request to Gemini API...');
     const result = await model.generateContent([prompt, imageData]);
     const response = await result.response;
     const text = response.text();
@@ -44,8 +45,16 @@ export async function analyzeImage(file: File): Promise<{
     }
     
     throw new Error("Invalid nutrition information format received from Gemini");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error analyzing image:", error);
+    
+    // Check for specific error types
+    if (error.message?.includes("503")) {
+      throw new Error("The AI service is currently overloaded. Please try again in a few moments.");
+    } else if (error.message?.includes("429")) {
+      throw new Error("Too many requests. Please wait a moment before trying again.");
+    }
+    
     throw error;
   }
 }

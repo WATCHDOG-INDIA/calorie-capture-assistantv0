@@ -48,7 +48,7 @@ const Index = () => {
     const { error } = await supabase
       .from('meal_analysis_history')
       .insert({
-        image_url: 'placeholder.svg', // Using a placeholder instead of actual image
+        image_url: 'placeholder.svg',
         calories: nutrition.calories,
         protein: nutrition.protein,
         carbs: nutrition.carbs,
@@ -75,9 +75,11 @@ const Index = () => {
       const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
       
+      console.log('Starting image analysis...');
       const nutrition = await analyzeImage(file);
-      setNutritionInfo(nutrition);
+      console.log('Analysis completed:', nutrition);
       
+      setNutritionInfo(nutrition);
       await saveAnalysis(nutrition);
       
       playSuccess();
@@ -85,13 +87,14 @@ const Index = () => {
         title: "Analysis Complete",
         description: "Your meal has been analyzed successfully!",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error analyzing image:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to analyze the image. Please try again.",
+        title: "Analysis Failed",
+        description: error.message || "Failed to analyze the image. Please try again.",
       });
+      setNutritionInfo(null);
     } finally {
       setIsAnalyzing(false);
     }
