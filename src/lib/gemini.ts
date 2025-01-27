@@ -15,7 +15,8 @@ export async function analyzeImage(file: File): Promise<{
     const apiKey = await getGeminiKey();
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    // Changed to use gemini-pro-vision model
+    const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
 
     const imageData = await fileToGenerativePart(file);
     const prompt = "You are a nutritionist analyzing this food image. Provide ONLY a valid JSON object with these exact numeric keys: calories, protein, carbs, fat (all as numbers). Example: {\"calories\": 300, \"protein\": 20, \"carbs\": 30, \"fat\": 10}. No other text or explanation.";
