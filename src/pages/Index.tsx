@@ -102,16 +102,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-500">
-      <div className="max-w-4xl mx-auto p-8 space-y-12">
+      <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-12">
         <div className="text-center space-y-4 animate-fade-in">
           <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 p-3 rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300">
-            <Sparkles className="w-6 h-6 text-purple-500 animate-pulse" />
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
+            <Sparkles className="w-4 h-4 md:w-6 md:h-6 text-purple-500 animate-pulse" />
+            <h1 className="text-2xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
               Caloriescount.AI
             </h1>
-            <Sparkles className="w-6 h-6 text-purple-500 animate-pulse" />
+            <Sparkles className="w-4 h-4 md:w-6 md:h-6 text-purple-500 animate-pulse" />
           </div>
-          <p className="text-lg text-gray-600 dark:text-gray-300 animate-fade-in delay-200">
+          <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 animate-fade-in delay-200">
             Discover the nutritional secrets of your meals with AI
           </p>
         </div>
