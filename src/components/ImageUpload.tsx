@@ -18,25 +18,52 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect }) => {
 
   const handleCameraCapture = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      // Request specifically the rear camera
+      const constraints = {
+        video: {
+          facingMode: 'environment' // This requests the rear camera
+        }
+      };
+      
+      console.log('Requesting camera access with constraints:', constraints);
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      
+      // Create video element to display the stream
       const video = document.createElement('video');
       video.srcObject = stream;
-      await video.play();
+      
+      // Wait for the video to be ready
+      await new Promise((resolve) => {
+        video.onloadedmetadata = () => {
+          video.play().then(resolve);
+        };
+      });
 
+      // Create canvas and capture the image
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      canvas.getContext('2d')?.drawImage(video, 0, 0);
+      
+      const context = canvas.getContext('2d');
+      if (!context) {
+        throw new Error('Could not get canvas context');
+      }
+      
+      context.drawImage(video, 0, 0);
 
+      // Convert to blob and create file
       canvas.toBlob((blob) => {
         if (blob) {
           const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" });
           onImageSelect(file);
         }
+        // Stop all tracks to release the camera
         stream.getTracks().forEach(track => track.stop());
       }, 'image/jpeg');
+      
     } catch (error) {
       console.error('Error accessing camera:', error);
+      throw error;
     }
   };
 
