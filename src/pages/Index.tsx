@@ -101,8 +101,19 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-500">
-      <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-12">
+    <div 
+      className="min-h-screen relative"
+      style={{
+        backgroundImage: `url('/lovable-uploads/042a3f0f-1c68-4000-bafa-0692bad68634.png')`,
+        backgroundSize: '400px',
+        backgroundRepeat: 'repeat',
+      }}
+    >
+      {/* Semi-transparent overlay for better readability */}
+      <div className="absolute inset-0 bg-white/90 dark:bg-gray-900/90" />
+      
+      {/* Content container */}
+      <div className="relative max-w-4xl mx-auto p-4 md:p-8 space-y-12">
         <div className="text-center space-y-4 animate-fade-in">
           <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 p-3 rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300">
             <Sparkles className="w-4 h-4 md:w-6 md:h-6 text-purple-500 animate-pulse" />
