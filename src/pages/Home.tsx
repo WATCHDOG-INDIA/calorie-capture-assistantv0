@@ -33,14 +33,7 @@ const Home = () => {
     },
   });
 
-  // Calculate remaining macros
-  const defaultTargets = {
-    calories: 2000,
-    protein: 150,
-    carbs: 200,
-    fat: 50,
-  };
-
+  // Calculate consumed macros
   const consumedMacros = meals?.reduce((acc, meal) => ({
     calories: acc.calories + (meal.calories || 0),
     protein: acc.protein + (meal.protein || 0),
@@ -52,13 +45,6 @@ const Home = () => {
     carbs: 0,
     fat: 0,
   });
-
-  const remainingMacros = {
-    calories: defaultTargets.calories - (consumedMacros?.calories || 0),
-    protein: defaultTargets.protein - (consumedMacros?.protein || 0),
-    carbs: defaultTargets.carbs - (consumedMacros?.carbs || 0),
-    fat: defaultTargets.fat - (consumedMacros?.fat || 0),
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -106,29 +92,29 @@ const Home = () => {
       <div className="px-4 py-6 space-y-6">
         <Card className="p-8 text-center">
           <div className="text-6xl font-bold text-green-500 mb-2">
-            {remainingMacros.calories}
+            {consumedMacros?.calories || 0}
           </div>
-          <div className="text-gray-500">Calories left</div>
+          <div className="text-gray-500">Calories consumed</div>
         </Card>
 
         <div className="grid grid-cols-3 gap-4">
           <MacroCard
-            value={remainingMacros.protein}
-            label="Protein left"
+            value={consumedMacros?.protein || 0}
+            label="Protein consumed"
             unit="g"
             color="red"
             icon="bolt"
           />
           <MacroCard
-            value={remainingMacros.carbs}
-            label="Carbs left"
+            value={consumedMacros?.carbs || 0}
+            label="Carbs consumed"
             unit="g"
             color="brown"
             icon="dots"
           />
           <MacroCard
-            value={remainingMacros.fat}
-            label="Fats left"
+            value={consumedMacros?.fat || 0}
+            label="Fats consumed"
             unit="g"
             color="blue"
             icon="droplet"
