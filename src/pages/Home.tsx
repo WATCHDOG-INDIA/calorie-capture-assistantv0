@@ -1,19 +1,103 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Camera } from 'lucide-react';
+import { Camera, Flame } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
 import MacroCard from '@/components/MacroCard';
+import { toast } from "@/components/ui/use-toast";
 
 const Home = () => {
   const navigate = useNavigate();
   const today = new Date();
   const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
   const currentDay = today.getDay();
+
+  // Get current streak
+  const { data: streakData, refetch: refetchStreak } = useQuery({
+    queryKey: ['streak'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_streaks')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No streak record found, create initial record
+          const { data: newStreak, error: createError } = await supabase
+            .from('user_streaks')
+            .insert([{ current_streak: 1 }])
+            .select()
+            .single();
+
+          if (createError) throw createError;
+          return newStreak;
+        }
+        throw error;
+      }
+      return data;
+    },
+  });
+
+  // Update streak on app open
+  useEffect(() => {
+    const updateStreak = async () => {
+      if (!streakData) return;
+
+      const lastVisit = new Date(streakData.last_visit_date);
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      // Reset format dates to compare only dates without time
+      const lastVisitDate = new Date(lastVisit.toDateString());
+      const todayDate = new Date(today.toDateString());
+      const yesterdayDate = new Date(yesterday.toDateString());
+
+      if (lastVisitDate.getTime() === todayDate.getTime()) {
+        // Already visited today, do nothing
+        return;
+      }
+
+      let newStreak = streakData.current_streak;
+
+      if (lastVisitDate.getTime() === yesterdayDate.getTime()) {
+        // Consecutive day, increment streak
+        newStreak += 1;
+        toast({
+          title: "Streak increased! 🔥",
+          description: `You're on a ${newStreak} day streak!`,
+        });
+      } else if (lastVisitDate.getTime() < yesterdayDate.getTime()) {
+        // Missed a day, reset streak
+        newStreak = 1;
+      }
+
+      // Update streak in database
+      const { error } = await supabase
+        .from('user_streaks')
+        .update({
+          last_visit_date: todayDate.toISOString(),
+          current_streak: newStreak,
+        })
+        .eq('id', streakData.id);
+
+      if (error) {
+        console.error('Error updating streak:', error);
+        return;
+      }
+
+      refetchStreak();
+    };
+
+    updateStreak();
+  }, [streakData]);
   
   // Get meals for today
   const { data: meals } = useQuery({
@@ -52,8 +136,8 @@ const Home = () => {
       <header className="p-4 flex justify-between items-center">
         <h1 className="text-2xl font-bold">CaloriesCountAI</h1>
         <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 rounded-full bg-yellow-400"></div>
-          <span className="font-bold">0</span>
+          <Flame className="w-6 h-6 text-orange-500" />
+          <span className="font-bold">{streakData?.current_streak || 0}</span>
         </div>
       </header>
 
