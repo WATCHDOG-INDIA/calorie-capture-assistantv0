@@ -9,49 +9,13 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      meal_analysis_history: {
-        Row: {
-          calories: number | null
-          carbs: number | null
-          created_at: string
-          fat: number | null
-          id: string
-          image_url: string
-          protein: number | null
-        }
-        Insert: {
-          calories?: number | null
-          carbs?: number | null
-          created_at?: string
-          fat?: number | null
-          id?: string
-          image_url: string
-          protein?: number | null
-        }
-        Update: {
-          calories?: number | null
-          carbs?: number | null
-          created_at?: string
-          fat?: number | null
-          id?: string
-          image_url?: string
-          protein?: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      get_secret: {
-        Args: {
-          name: string
-        }
-        Returns: {
-          secret: string
-        }[]
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
