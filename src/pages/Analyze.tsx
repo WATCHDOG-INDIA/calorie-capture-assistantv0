@@ -5,10 +5,12 @@ import NutritionCard from '@/components/NutritionCard';
 import { analyzeImage } from '@/lib/gemini';
 import { toast } from '@/components/ui/use-toast';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import useSound from 'use-sound';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 type MealHistory = Database['public']['Tables']['meal_analysis_history']['Row'];
 
@@ -20,6 +22,7 @@ interface NutritionInfo {
 }
 
 const Analyze = () => {
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [nutritionInfo, setNutritionInfo] = useState<NutritionInfo | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -114,6 +117,18 @@ const Analyze = () => {
     >
       {/* Semi-transparent overlay for better readability */}
       <div className="absolute inset-0 bg-white/90 dark:bg-gray-900/90" />
+      
+      {/* Back Button */}
+      <div className="relative z-10 p-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate('/')}
+          className="hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </Button>
+      </div>
       
       {/* Content container */}
       <div className="relative max-w-4xl mx-auto p-4 md:p-8 space-y-12">
