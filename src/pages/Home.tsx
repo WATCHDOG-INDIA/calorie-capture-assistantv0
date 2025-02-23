@@ -171,7 +171,7 @@ const Home = () => {
       </div>
 
       {/* Upload Button */}
-      <div className="fixed bottom-20 left-0 right-0 px-4">
+      <div className="fixed bottom-8 left-0 right-0 px-4">
         <Button
           onClick={() => navigate('/analyze')}
           className="w-full bg-green-500 hover:bg-green-600 text-white rounded-full py-6"
@@ -179,19 +179,6 @@ const Home = () => {
           <Camera className="w-6 h-6 mr-2" />
           Upload a photo
         </Button>
-      </div>
-
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 h-16 bg-black flex items-center justify-center">
-        <button className="text-blue-500">
-          <svg
-            className="w-6 h-6"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-          </svg>
-        </button>
       </div>
     </div>
   );
