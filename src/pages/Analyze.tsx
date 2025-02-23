@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import ImageUpload from '@/components/ImageUpload';
 import NutritionCard from '@/components/NutritionCard';
@@ -5,9 +6,11 @@ import { analyzeImage } from '@/lib/gemini';
 import { toast } from '@/components/ui/use-toast';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-import { Tables } from '@/integrations/supabase/types';
+import { Database } from '@/integrations/supabase/types';
 import useSound from 'use-sound';
 import { Sparkles } from 'lucide-react';
+
+type MealHistory = Database['public']['Tables']['meal_analysis_history']['Row'];
 
 interface NutritionInfo {
   calories: number;
@@ -16,11 +19,11 @@ interface NutritionInfo {
   fat: number;
 }
 
-const Index = () => {
+const Analyze = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [nutritionInfo, setNutritionInfo] = useState<NutritionInfo | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [history, setHistory] = useState<Tables<'meal_analysis_history'>[]>([]);
+  const [history, setHistory] = useState<MealHistory[]>([]);
   
   const [playSuccess] = useSound('/sounds/success.mp3');
   const [playAnalyzing] = useSound('/sounds/analyzing.mp3');
@@ -41,14 +44,14 @@ const Index = () => {
       return;
     }
 
-    setHistory(data);
+    setHistory(data || []);
   };
 
   const saveAnalysis = async (nutrition: NutritionInfo) => {
     const { error } = await supabase
       .from('meal_analysis_history')
       .insert({
-        image_url: 'placeholder.svg',
+        image_url: selectedImage || 'placeholder.svg',
         calories: nutrition.calories,
         protein: nutrition.protein,
         carbs: nutrition.carbs,
@@ -161,18 +164,17 @@ const Index = () => {
                 Your Meal History
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {history.map((item, index) => (
+                {history.map((item) => (
                   <Card 
                     key={item.id} 
                     className="p-4 space-y-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm transform transition-all duration-300 hover:scale-105 hover:shadow-xl animate-fade-in"
-                    style={{ animationDelay: `${index * 100}ms` }}
                   >
                     <NutritionCard
                       nutrition={{
-                        calories: item.calories || 0,
-                        protein: item.protein || 0,
-                        carbs: item.carbs || 0,
-                        fat: item.fat || 0,
+                        calories: item.calories,
+                        protein: item.protein,
+                        carbs: item.carbs,
+                        fat: item.fat,
                       }}
                     />
                     <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
@@ -189,4 +191,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Analyze;
