@@ -276,21 +276,21 @@ const Home = () => {
             label="Protein"
             unit="g"
             color="red"
-            icon={<Bolt className="w-6 h-6" />}
+            icon="bolt"
           />
           <MacroCard
             value={consumedMacros?.carbs || 0}
             label="Carbs"
             unit="g"
             color="yellow"
-            icon={<Circle className="w-6 h-6" />}
+            icon="dots"
           />
           <MacroCard
             value={consumedMacros?.fat || 0}
             label="Fats"
             unit="g"
             color="blue"
-            icon={<Droplet className="w-6 h-6" />}
+            icon="droplet"
           />
         </div>
 

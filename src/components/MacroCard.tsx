@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Card } from "@/components/ui/card";
 import { Bolt, Circle, Droplet } from 'lucide-react';
 
