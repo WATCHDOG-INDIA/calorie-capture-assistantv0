@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import ImageUpload from '@/components/ImageUpload';
 import NutritionCard from '@/components/NutritionCard';
@@ -32,9 +31,15 @@ const Analyze = () => {
   const [playAnalyzing] = useSound('/sounds/analyzing.mp3');
 
   const fetchHistory = async () => {
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+
     const { data, error } = await supabase
       .from('meal_analysis_history')
       .select('*')
+      .gte('created_at', startOfDay)
+      .lte('created_at', endOfDay)
       .order('created_at', { ascending: false });
 
     if (error) {
