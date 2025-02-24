@@ -153,13 +153,13 @@ const Home = () => {
               <div
                 key={index}
                 className={`flex flex-col items-center ${
-                  isToday ? 'text-white' : 'text-gray-500'
+                  isToday ? 'text-black dark:text-white' : 'text-gray-500'
                 }`}
               >
                 <span className="text-sm">{day}</span>
                 <div
                   className={`w-10 h-10 flex items-center justify-center rounded-full ${
-                    isToday ? 'bg-black' : ''
+                    isToday ? 'bg-black text-white dark:bg-white dark:text-black' : ''
                   }`}
                 >
                   <span className="text-lg">
