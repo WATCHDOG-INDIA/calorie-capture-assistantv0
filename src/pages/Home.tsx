@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -221,67 +222,33 @@ const Home = () => {
             label="Protein"
             unit="g"
             color="red"
-            icon="bolt"
+            icon={<Bolt className="w-6 h-6" />}
           />
           <MacroCard
             value={consumedMacros?.carbs || 0}
             label="Carbs"
             unit="g"
-            color="brown"
-            icon="dots"
+            color="yellow"
+            icon={<Circle className="w-6 h-6" />}
           />
           <MacroCard
             value={consumedMacros?.fat || 0}
             label="Fats"
             unit="g"
             color="blue"
-            icon="droplet"
+            icon={<Droplet className="w-6 h-6" />}
           />
         </div>
       </div>
 
-      {/* Recently Eaten Section */}
-      <div className="px-4 py-6">
-        <h2 className="text-2xl font-bold mb-4">Recently eaten</h2>
-        {meals && meals.length > 0 ? (
-          <div className="space-y-4">
-            {meals.map((meal) => (
-              <Card key={meal.id} className="p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-lg font-semibold">Meal</p>
-                    <p className="text-sm text-gray-500">
-                      {format(new Date(meal.created_at), 'h:mm a')}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold">{meal.calories} cal</p>
-                    <p className="text-sm text-gray-500">
-                      P: {meal.protein}g C: {meal.carbs}g F: {meal.fat}g
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card className="p-6 text-center text-gray-500">
-            <p className="mb-2">You haven't uploaded any food</p>
-            <p className="text-sm">
-              Start tracking Today's meals by taking a quick pictures
-            </p>
-          </Card>
-        )}
-      </div>
-
       {/* Upload Button */}
-      <div className="fixed bottom-8 left-0 right-0 px-4">
+      <div className="fixed bottom-6 right-6">
         <Button
+          size="lg"
           onClick={() => navigate('/analyze')}
-          className="w-full bg-green-500 hover:bg-green-600 text-white rounded-full py-6"
+          className="rounded-full w-16 h-16 bg-blue-500 hover:bg-blue-600 shadow-lg"
         >
-          <Camera className="w-6 h-6 mr-2" />
-          Upload a photo
+          <Camera className="w-8 h-8" />
         </Button>
       </div>
 

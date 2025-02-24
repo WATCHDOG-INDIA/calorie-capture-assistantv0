@@ -66,6 +66,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_streaks: {
+        Row: {
+          created_at: string | null
+          current_streak: number
+          id: string
+          last_visit_date: string
+          message: string | null
+          weekly_checkins: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_streak?: number
+          id?: string
+          last_visit_date?: string
+          message?: string | null
+          weekly_checkins?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          current_streak?: number
+          id?: string
+          last_visit_date?: string
+          message?: string | null
+          weekly_checkins?: Json | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
