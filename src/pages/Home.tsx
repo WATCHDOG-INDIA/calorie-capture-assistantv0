@@ -1,26 +1,36 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Camera, Flame } from 'lucide-react';
+import { Camera, Flame, Bolt, Circle, Droplet } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
 import MacroCard from '@/components/MacroCard';
 import { toast } from "@/components/ui/use-toast";
+import StreakDialog from '@/components/StreakDialog';
+
+interface UserStreak {
+  id: string;
+  created_at: string;
+  last_visit_date: string;
+  current_streak: number;
+  weekly_checkins: string[];
+  message: string;
+}
 
 const Home = () => {
   const navigate = useNavigate();
   const today = new Date();
   const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
   const currentDay = today.getDay();
+  const [showStreakDialog, setShowStreakDialog] = useState(false);
 
   // Get current streak
   const { data: streakData, refetch: refetchStreak } = useQuery({
     queryKey: ['streak'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let { data: streak, error } = await supabase
         .from('user_streaks')
         .select('*')
         .order('created_at', { ascending: false })
@@ -29,19 +39,23 @@ const Home = () => {
 
       if (error) {
         if (error.code === 'PGRST116') {
-          // No streak record found, create initial record
           const { data: newStreak, error: createError } = await supabase
             .from('user_streaks')
-            .insert([{ current_streak: 1 }])
+            .insert([{ 
+              current_streak: 1,
+              last_visit_date: new Date().toISOString(),
+              weekly_checkins: [],
+              message: "Keep the flame lit every day!"
+            }])
             .select()
             .single();
 
           if (createError) throw createError;
-          return newStreak;
+          return newStreak as UserStreak;
         }
         throw error;
       }
-      return data;
+      return streak as UserStreak;
     },
   });
 
@@ -71,12 +85,26 @@ const Home = () => {
         // Consecutive day, increment streak
         newStreak += 1;
         toast({
-          title: "Streak increased! 🔥",
-          description: `You're on a ${newStreak} day streak!`,
+          title: "🔥 Streak increased!",
+          description: `You're on fire! ${newStreak} day streak!`,
+          action: (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowStreakDialog(true)}
+            >
+              View Streak
+            </Button>
+          ),
         });
       } else if (lastVisitDate.getTime() < yesterdayDate.getTime()) {
         // Missed a day, reset streak
         newStreak = 1;
+        toast({
+          variant: "destructive",
+          title: "Streak Reset",
+          description: "You missed a day. Let's start a new streak!",
+        });
       }
 
       // Update streak in database
@@ -98,7 +126,7 @@ const Home = () => {
 
     updateStreak();
   }, [streakData]);
-  
+
   // Get meals for today
   const { data: meals } = useQuery({
     queryKey: ['meals', format(today, 'yyyy-MM-dd')],
@@ -135,10 +163,13 @@ const Home = () => {
       {/* Header */}
       <header className="p-4 flex justify-between items-center">
         <h1 className="text-2xl font-bold">CaloriesCountAI</h1>
-        <div className="flex items-center space-x-2">
-          <Flame className="w-6 h-6 text-orange-500" />
-          <span className="font-bold">{streakData?.current_streak || 0}</span>
-        </div>
+        <button
+          onClick={() => setShowStreakDialog(true)}
+          className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        >
+          <Flame className="w-6 h-6 text-orange-500 animate-pulse" />
+          <span className="font-bold text-xl">{streakData?.current_streak || 0}</span>
+        </button>
       </header>
 
       {/* Date Picker */}
@@ -174,31 +205,34 @@ const Home = () => {
 
       {/* Macros Display */}
       <div className="px-4 py-6 space-y-6">
-        <Card className="p-8 text-center">
-          <div className="text-6xl font-bold text-green-500 mb-2">
-            {consumedMacros?.calories || 0}
+        <Card className="p-8 text-center relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-blue-500/10 transform group-hover:scale-105 transition-transform duration-300" />
+          <div className="relative">
+            <div className="text-6xl font-bold text-green-500 mb-2 animate-pulse">
+              {consumedMacros?.calories || 0}
+            </div>
+            <div className="text-gray-500">Calories consumed</div>
           </div>
-          <div className="text-gray-500">Calories consumed</div>
         </Card>
 
         <div className="grid grid-cols-3 gap-4">
           <MacroCard
             value={consumedMacros?.protein || 0}
-            label="Protein consumed"
+            label="Protein"
             unit="g"
             color="red"
             icon="bolt"
           />
           <MacroCard
             value={consumedMacros?.carbs || 0}
-            label="Carbs consumed"
+            label="Carbs"
             unit="g"
             color="brown"
             icon="dots"
           />
           <MacroCard
             value={consumedMacros?.fat || 0}
-            label="Fats consumed"
+            label="Fats"
             unit="g"
             color="blue"
             icon="droplet"
@@ -250,6 +284,13 @@ const Home = () => {
           Upload a photo
         </Button>
       </div>
+
+      {/* Streak Dialog */}
+      <StreakDialog 
+        isOpen={showStreakDialog}
+        onClose={() => setShowStreakDialog(false)}
+        streak={streakData?.current_streak || 0}
+      />
     </div>
   );
 };
