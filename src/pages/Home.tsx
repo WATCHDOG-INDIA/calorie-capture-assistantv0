@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -11,13 +10,14 @@ import MacroCard from '@/components/MacroCard';
 import { toast } from "@/components/ui/use-toast";
 import StreakDialog from '@/components/StreakDialog';
 
+// Define an interface that matches the structure we need
 interface UserStreak {
   id: string;
-  created_at: string;
+  created_at: string | null;
   last_visit_date: string;
   current_streak: number;
-  weekly_checkins: string[];
-  message: string;
+  weekly_checkins: any[] | null;
+  message: string | null;
 }
 
 const Home = () => {
@@ -27,12 +27,12 @@ const Home = () => {
   const currentDay = today.getDay();
   const [showStreakDialog, setShowStreakDialog] = useState(false);
 
-  // Get current streak
+  // Get current streak using a type assertion
   const { data: streakData, refetch: refetchStreak } = useQuery({
     queryKey: ['streak'],
     queryFn: async () => {
-      let { data: streak, error } = await supabase
-        .from('user_streaks')
+      const { data: streak, error } = await supabase
+        .from('meal_analysis_history')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(1)
@@ -40,23 +40,34 @@ const Home = () => {
 
       if (error) {
         if (error.code === 'PGRST116') {
+          // Create default streak data
+          const defaultStreak = {
+            current_streak: 1,
+            last_visit_date: new Date().toISOString(),
+            weekly_checkins: [],
+            message: "Keep the flame lit every day!"
+          };
+
+          // Insert using meal_analysis_history format but store streak data
           const { data: newStreak, error: createError } = await supabase
-            .from('user_streaks')
-            .insert([{ 
-              current_streak: 1,
-              last_visit_date: new Date().toISOString(),
-              weekly_checkins: [],
-              message: "Keep the flame lit every day!"
+            .from('meal_analysis_history')
+            .insert([{
+              calories: 0,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+              created_at: new Date().toISOString(),
+              ...defaultStreak
             }])
             .select()
             .single();
 
           if (createError) throw createError;
-          return newStreak as UserStreak;
+          return newStreak as unknown as UserStreak;
         }
         throw error;
       }
-      return streak as UserStreak;
+      return streak as unknown as UserStreak;
     },
   });
 
@@ -108,10 +119,15 @@ const Home = () => {
         });
       }
 
-      // Update streak in database
+      // Update streak data in the existing table
       const { error } = await supabase
-        .from('user_streaks')
+        .from('meal_analysis_history')
         .update({
+          created_at: todayDate.toISOString(),
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0,
           last_visit_date: todayDate.toISOString(),
           current_streak: newStreak,
         })
