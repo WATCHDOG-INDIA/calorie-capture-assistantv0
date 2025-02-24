@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Camera, Flame, Bolt, Circle, Droplet, Check } from 'lucide-react';
+import { Camera, Flame, Check, Bolt, Circle, Droplet } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
@@ -211,50 +211,27 @@ const Home = () => {
             const isCheckedIn = streakData?.weekly_checkins?.includes(
               format(date, 'yyyy-MM-dd')
             );
+            const isInStreak = index <= currentDay && isCheckedIn;
             
             return (
               <div key={index} className="flex flex-col items-center">
                 <span className="text-sm text-gray-500">{day}</span>
                 <div
-                  className={`w-10 h-10 flex items-center justify-center rounded-full 
+                  className={`w-10 h-10 flex items-center justify-center rounded-full relative
                     ${isToday ? 'bg-black text-white dark:bg-white dark:text-black' : ''}
-                    ${isCheckedIn ? 'bg-orange-500/20' : ''}
+                    ${isInStreak ? 'bg-orange-500/20' : ''}
                   `}
                 >
                   <span className="text-lg">
                     {format(date, 'dd')}
                   </span>
-                  {isCheckedIn && <Check className="w-4 h-4 absolute text-orange-500" />}
+                  {isInStreak && (
+                    <Check className="absolute w-4 h-4 text-orange-500" />
+                  )}
                 </div>
               </div>
             );
           })}
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="px-4 mb-4">
-        <div className="flex space-x-4 border-b border-gray-200 dark:border-gray-700">
-          <button
-            onClick={() => setActiveTab('today')}
-            className={`pb-2 px-1 ${
-              activeTab === 'today'
-                ? 'border-b-2 border-blue-500 text-blue-500'
-                : 'text-gray-500'
-            }`}
-          >
-            Today
-          </button>
-          <button
-            onClick={() => setActiveTab('recent')}
-            className={`pb-2 px-1 ${
-              activeTab === 'recent'
-                ? 'border-b-2 border-blue-500 text-blue-500'
-                : 'text-gray-500'
-            }`}
-          >
-            Recently Added
-          </button>
         </div>
       </div>
 
@@ -294,22 +271,40 @@ const Home = () => {
           />
         </div>
 
-        {activeTab === 'recent' && (
-          <div className="space-y-4">
-            {meals?.map((meal) => (
-              <Card key={meal.id} className="p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="font-medium">{format(new Date(meal.created_at), 'MMM dd, HH:mm')}</div>
-                    <div className="text-sm text-gray-500">
-                      {meal.calories} cal · {meal.protein}g protein · {meal.carbs}g carbs · {meal.fat}g fat
-                    </div>
+        {/* Recently Added Meals */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Today's Meals</h2>
+          {meals?.map((meal) => (
+            <Card key={meal.id} className="p-4">
+              <div className="flex gap-4 items-center">
+                {meal.image_url && (
+                  <img 
+                    src={meal.image_url} 
+                    alt="Meal" 
+                    className="w-20 h-20 rounded-lg object-cover"
+                  />
+                )}
+                <div className="flex-1">
+                  <div className="font-medium">{format(new Date(meal.created_at), 'HH:mm')}</div>
+                  <div className="text-sm text-gray-500 space-x-2">
+                    <span>{meal.calories} cal</span>
+                    <span>•</span>
+                    <span>{meal.protein}g protein</span>
+                    <span>•</span>
+                    <span>{meal.carbs}g carbs</span>
+                    <span>•</span>
+                    <span>{meal.fat}g fat</span>
                   </div>
                 </div>
-              </Card>
-            ))}
-          </div>
-        )}
+              </div>
+            </Card>
+          ))}
+          {meals?.length === 0 && (
+            <div className="text-center text-gray-500 py-8">
+              No meals logged today
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Upload Button */}
