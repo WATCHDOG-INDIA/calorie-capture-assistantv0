@@ -3,7 +3,7 @@ import React from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Flame, Bread, Beef, Droplet, X } from 'lucide-react';
+import { Flame, Cookie, Beef, Droplet, X } from 'lucide-react';
 
 interface ResultsPopupProps {
   isOpen: boolean;
@@ -61,7 +61,7 @@ const ResultsPopup: React.FC<ResultsPopupProps> = ({
             <Card className="p-4 bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/30">
-                  <Bread className="w-5 h-5 text-amber-500" />
+                  <Cookie className="w-5 h-5 text-amber-500" />
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Carbs</p>
