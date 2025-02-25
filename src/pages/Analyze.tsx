@@ -114,29 +114,31 @@ const Analyze = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 relative">
-      {/* Header with back button and title */}
-      <div className="fixed top-0 left-0 right-0 p-4 bg-white dark:bg-gray-900 z-10 flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/')}
-          className="hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <ArrowLeft className="h-6 w-6" />
-        </Button>
-        <div className="text-center flex-1">
-          <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 p-3 rounded-full shadow-sm">
-            <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-purple-500" />
-            <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
-              Caloriescount.AI
-            </h1>
-            <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-purple-500" />
+      {/* Header */}
+      <div className="fixed top-0 left-0 right-0 p-4 bg-white dark:bg-gray-900 z-10">
+        <div className="max-w-4xl mx-auto flex items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+            className="absolute left-4 hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </Button>
+          <div className="flex-1 flex justify-center">
+            <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 p-3 rounded-full shadow-sm">
+              <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-purple-500" />
+              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
+                Caloriescount.AI
+              </h1>
+              <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-purple-500" />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="pt-24 pb-32 px-4 md:px-8 max-w-4xl mx-auto space-y-8">
+      <div className="pt-24 pb-40 px-4 md:px-8 max-w-4xl mx-auto space-y-8">
         <p className="text-center text-gray-600 dark:text-gray-300">
           Discover the nutritional secrets of your meals with AI
         </p>
@@ -189,9 +191,9 @@ const Analyze = () => {
 
       {/* Fixed bottom buttons */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
-        <div className="flex justify-center gap-4 max-w-md mx-auto">
+        <div className="flex flex-col gap-4 max-w-md mx-auto">
           <Button
-            className="flex-1 bg-green-500 hover:bg-green-600 text-white"
+            className="w-full bg-green-500 hover:bg-green-600 text-white"
             onClick={() => {
               const fileInput = document.createElement('input');
               fileInput.type = 'file';
@@ -207,7 +209,7 @@ const Analyze = () => {
             Upload Image
           </Button>
           <Button
-            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white"
             onClick={() => {
               const fileInput = document.createElement('input');
               fileInput.type = 'file';
