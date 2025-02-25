@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import ImageUpload from '@/components/ImageUpload';
 import NutritionCard from '@/components/NutritionCard';
+import ResultsPopup from '@/components/ResultsPopup';
 import { analyzeImage } from '@/lib/gemini';
 import { toast } from '@/components/ui/use-toast';
 import { Card } from '@/components/ui/card';
@@ -26,6 +26,7 @@ const Analyze = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [nutritionInfo, setNutritionInfo] = useState<NutritionInfo | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const [history, setHistory] = useState<MealHistory[]>([]);
   
   const [playSuccess] = useSound('/sounds/success.mp3');
@@ -95,6 +96,7 @@ const Analyze = () => {
       await saveAnalysis(nutrition);
       
       playSuccess();
+      setShowResults(true);
       toast({
         title: "Analysis Complete",
         description: "Your meal has been analyzed successfully!",
@@ -143,26 +145,10 @@ const Analyze = () => {
           Discover the nutritional secrets of your meals with AI
         </p>
 
-        {selectedImage && (
-          <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-            <img
-              src={selectedImage}
-              alt="Selected meal"
-              className="w-full max-w-md mx-auto rounded-lg shadow-lg"
-            />
-          </Card>
-        )}
-        
         {isAnalyzing && (
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
             <p className="mt-4 text-gray-600 dark:text-gray-300">Analyzing your meal with AI magic...</p>
-          </div>
-        )}
-        
-        {nutritionInfo && !isAnalyzing && (
-          <div className="flex justify-center">
-            <NutritionCard nutrition={nutritionInfo} />
           </div>
         )}
 
@@ -227,6 +213,16 @@ const Analyze = () => {
           </Button>
         </div>
       </div>
+
+      {/* Results Popup */}
+      {nutritionInfo && (
+        <ResultsPopup
+          isOpen={showResults}
+          onClose={() => setShowResults(false)}
+          nutrition={nutritionInfo}
+          imageUrl={selectedImage || undefined}
+        />
+      )}
     </div>
   );
 };
