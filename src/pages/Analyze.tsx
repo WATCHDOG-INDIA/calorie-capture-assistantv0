@@ -93,21 +93,10 @@ const Analyze = () => {
       console.log('Analysis completed:', nutrition);
       
       setNutritionInfo(nutrition);
-      await saveAnalysis(nutrition);
-      
-      playSuccess();
       setShowResults(true);
-      toast({
-        title: "Analysis Complete",
-        description: "Your meal has been analyzed successfully!",
-      });
+      playSuccess();
     } catch (error: any) {
       console.error('Error analyzing image:', error);
-      toast({
-        variant: "destructive",
-        title: "Analysis Failed",
-        description: error.message || "Failed to analyze the image. Please try again.",
-      });
       setNutritionInfo(null);
     } finally {
       setIsAnalyzing(false);
@@ -218,7 +207,10 @@ const Analyze = () => {
       {nutritionInfo && (
         <ResultsPopup
           isOpen={showResults}
-          onClose={() => setShowResults(false)}
+          onClose={() => {
+            setShowResults(false);
+            navigate('/');
+          }}
           nutrition={nutritionInfo}
           imageUrl={selectedImage || undefined}
         />

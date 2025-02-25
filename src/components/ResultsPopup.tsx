@@ -4,6 +4,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Flame, Cookie, Beef, Droplet, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface ResultsPopupProps {
   isOpen: boolean;
@@ -23,6 +24,8 @@ const ResultsPopup: React.FC<ResultsPopupProps> = ({
   nutrition,
   imageUrl
 }) => {
+  const navigate = useNavigate();
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md p-0 overflow-hidden bg-white dark:bg-gray-900 rounded-2xl">
@@ -44,19 +47,6 @@ const ResultsPopup: React.FC<ResultsPopupProps> = ({
         
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-2 gap-4">
-            {/* Calories */}
-            <Card className="col-span-2 p-4 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-full bg-orange-100 dark:bg-orange-900/30">
-                  <Flame className="w-5 h-5 text-orange-500" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Calories</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{nutrition.calories}</p>
-                </div>
-              </div>
-            </Card>
-
             {/* Carbs */}
             <Card className="p-4 bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20">
               <div className="flex items-center gap-3">
@@ -95,10 +85,26 @@ const ResultsPopup: React.FC<ResultsPopupProps> = ({
                 </div>
               </div>
             </Card>
+
+            {/* Calories */}
+            <Card className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-orange-100 dark:bg-orange-900/30">
+                  <Flame className="w-5 h-5 text-orange-500" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Calories</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{nutrition.calories}</p>
+                </div>
+              </div>
+            </Card>
           </div>
 
           <Button
-            onClick={onClose}
+            onClick={() => {
+              onClose();
+              navigate('/');
+            }}
             className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-800 dark:hover:bg-gray-700"
           >
             Done
