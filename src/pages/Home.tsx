@@ -1,8 +1,9 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Camera, Flame, Check, Bolt, Circle, Droplet } from 'lucide-react';
+import { Camera, Flame, Check, ArrowLeft, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
@@ -190,8 +191,17 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="p-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">CaloriesCountAI</h1>
+      <header className="p-4 flex items-start justify-between">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </Button>
+          <h1 className="text-2xl font-bold">CaloriesCountAI</h1>
+        </div>
         <button
           onClick={() => setShowStreakDialog(true)}
           className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
@@ -307,8 +317,15 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Upload Button */}
-      <div className="fixed bottom-6 right-6">
+      {/* Action Buttons */}
+      <div className="fixed bottom-6 right-6 flex gap-4">
+        <Button
+          size="lg"
+          onClick={() => {/* Handle gallery upload */}}
+          className="rounded-full w-16 h-16 bg-gray-500 hover:bg-gray-600 shadow-lg"
+        >
+          <Plus className="w-8 h-8" />
+        </Button>
         <Button
           size="lg"
           onClick={() => navigate('/analyze')}
