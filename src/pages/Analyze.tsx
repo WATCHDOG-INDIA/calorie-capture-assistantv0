@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import ImageUpload from '@/components/ImageUpload';
 import NutritionCard from '@/components/NutritionCard';
@@ -8,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import useSound from 'use-sound';
-import { Sparkles, ArrowLeft } from 'lucide-react';
+import { Sparkles, ArrowLeft, Camera, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 type MealHistory = Database['public']['Tables']['meal_analysis_history']['Row'];
@@ -112,99 +113,116 @@ const Analyze = () => {
   };
 
   return (
-    <div 
-      className="min-h-screen relative"
-      style={{
-        backgroundImage: `url('/lovable-uploads/042a3f0f-1c68-4000-bafa-0692bad68634.png')`,
-        backgroundSize: '400px',
-        backgroundRepeat: 'repeat',
-      }}
-    >
-      {/* Semi-transparent overlay for better readability */}
-      <div className="absolute inset-0 bg-white/90 dark:bg-gray-900/90" />
-      
-      {/* Back Button */}
-      <div className="relative z-10 p-4">
+    <div className="min-h-screen bg-white dark:bg-gray-900 relative">
+      {/* Header with back button and title */}
+      <div className="fixed top-0 left-0 right-0 p-4 bg-white dark:bg-gray-900 z-10 flex items-center gap-4">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigate('/')}
-          className="hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+          className="hover:bg-gray-100 dark:hover:bg-gray-800"
         >
           <ArrowLeft className="h-6 w-6" />
         </Button>
-      </div>
-      
-      {/* Content container */}
-      <div className="relative max-w-4xl mx-auto p-4 md:p-8 space-y-12">
-        <div className="text-center space-y-4 animate-fade-in">
-          <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 p-3 rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300">
-            <Sparkles className="w-4 h-4 md:w-6 md:h-6 text-purple-500 animate-pulse" />
-            <h1 className="text-2xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
+        <div className="text-center flex-1">
+          <div className="inline-flex items-center gap-2 bg-white dark:bg-gray-800 p-3 rounded-full shadow-sm">
+            <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-purple-500" />
+            <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
               Caloriescount.AI
             </h1>
-            <Sparkles className="w-4 h-4 md:w-6 md:h-6 text-purple-500 animate-pulse" />
+            <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-purple-500" />
           </div>
-          <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 animate-fade-in delay-200">
-            Discover the nutritional secrets of your meals with AI
-          </p>
         </div>
-        
-        <div className="space-y-8">
-          <div className="transform hover:scale-105 transition-all duration-300">
-            <ImageUpload onImageSelect={handleImageSelect} />
-          </div>
-          
-          {selectedImage && (
-            <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm transform transition-all duration-500 hover:shadow-xl animate-scale-in">
-              <img
-                src={selectedImage}
-                alt="Selected meal"
-                className="w-full max-w-md mx-auto rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300"
-              />
-            </Card>
-          )}
-          
-          {isAnalyzing && (
-            <div className="text-center animate-fade-in">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
-              <p className="mt-4 text-gray-600 dark:text-gray-300">Analyzing your meal with AI magic...</p>
-            </div>
-          )}
-          
-          {nutritionInfo && !isAnalyzing && (
-            <div className="flex justify-center animate-scale-in">
-              <NutritionCard nutrition={nutritionInfo} />
-            </div>
-          )}
+      </div>
 
-          {history.length > 0 && (
-            <div className="mt-16 animate-fade-in">
-              <h2 className="text-3xl font-semibold mb-8 text-center bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
-                Your Meal History
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {history.map((item) => (
-                  <Card 
-                    key={item.id} 
-                    className="p-4 space-y-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm transform transition-all duration-300 hover:scale-105 hover:shadow-xl animate-fade-in"
-                  >
-                    <NutritionCard
-                      nutrition={{
-                        calories: item.calories,
-                        protein: item.protein,
-                        carbs: item.carbs,
-                        fat: item.fat,
-                      }}
-                    />
-                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                      {new Date(item.created_at).toLocaleDateString()}
-                    </p>
-                  </Card>
-                ))}
-              </div>
+      {/* Main content */}
+      <div className="pt-24 pb-32 px-4 md:px-8 max-w-4xl mx-auto space-y-8">
+        <p className="text-center text-gray-600 dark:text-gray-300">
+          Discover the nutritional secrets of your meals with AI
+        </p>
+
+        {selectedImage && (
+          <Card className="p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+            <img
+              src={selectedImage}
+              alt="Selected meal"
+              className="w-full max-w-md mx-auto rounded-lg shadow-lg"
+            />
+          </Card>
+        )}
+        
+        {isAnalyzing && (
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600 dark:text-gray-300">Analyzing your meal with AI magic...</p>
+          </div>
+        )}
+        
+        {nutritionInfo && !isAnalyzing && (
+          <div className="flex justify-center">
+            <NutritionCard nutrition={nutritionInfo} />
+          </div>
+        )}
+
+        {history.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-3xl font-semibold mb-8 text-center bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
+              Your Meal History
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {history.map((item) => (
+                <Card key={item.id} className="p-4 space-y-4">
+                  <NutritionCard
+                    nutrition={{
+                      calories: item.calories,
+                      protein: item.protein,
+                      carbs: item.carbs,
+                      fat: item.fat,
+                    }}
+                  />
+                </Card>
+              ))}
             </div>
-          )}
+          </div>
+        )}
+      </div>
+
+      {/* Fixed bottom buttons */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+        <div className="flex justify-center gap-4 max-w-md mx-auto">
+          <Button
+            className="flex-1 bg-green-500 hover:bg-green-600 text-white"
+            onClick={() => {
+              const fileInput = document.createElement('input');
+              fileInput.type = 'file';
+              fileInput.accept = 'image/*';
+              fileInput.onchange = (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                if (file) handleImageSelect(file);
+              };
+              fileInput.click();
+            }}
+          >
+            <Upload className="w-5 h-5 mr-2" />
+            Upload Image
+          </Button>
+          <Button
+            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+            onClick={() => {
+              const fileInput = document.createElement('input');
+              fileInput.type = 'file';
+              fileInput.accept = 'image/*';
+              fileInput.capture = 'environment';
+              fileInput.onchange = (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                if (file) handleImageSelect(file);
+              };
+              fileInput.click();
+            }}
+          >
+            <Camera className="w-5 h-5 mr-2" />
+            Take Photo
+          </Button>
         </div>
       </div>
     </div>
