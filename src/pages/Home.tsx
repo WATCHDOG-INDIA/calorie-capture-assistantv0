@@ -29,77 +29,81 @@ const Home = () => {
     checkAuth();
   }, [navigate]);
 
-  const { data: streakData } = useQuery({
-    queryKey: ['streak'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+  const fetchStreak = async (): Promise<UserStreak> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
 
-      const { data: streak, error } = await supabase
+    const { data: streak, error } = await supabase
+      .from('user_streaks')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!streak) {
+      const defaultStreak: Omit<UserStreak, 'id' | 'created_at'> = {
+        current_streak: 1,
+        last_visit_date: new Date().toISOString(),
+        weekly_checkins: [],
+        message: "Keep the flame lit every day!",
+        user_id: user.id
+      };
+
+      const { data: newStreak, error: createError } = await supabase
         .from('user_streaks')
+        .insert([defaultStreak])
+        .select()
+        .single();
+
+      if (createError) throw createError;
+      return newStreak as UserStreak;
+    }
+
+    return streak as UserStreak;
+  };
+
+  const fetchMeals = async (): Promise<MealData[]> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+    
+    if (activeTab === 'today') {
+      const { data, error } = await supabase
+        .from('meal_analysis_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('created_at', startOfDay)
+        .lte('created_at', endOfDay);
+        
+      if (error) throw error;
+      return (data || []) as MealData[];
+    } else {
+      const { data, error } = await supabase
+        .from('meal_analysis_history')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
+        .limit(10);
+        
       if (error) throw error;
+      return (data || []) as MealData[];
+    }
+  };
 
-      if (!streak) {
-        const defaultStreak: Omit<UserStreak, 'id' | 'created_at'> = {
-          current_streak: 1,
-          last_visit_date: new Date().toISOString(),
-          weekly_checkins: [],
-          message: "Keep the flame lit every day!",
-          user_id: user.id
-        };
-
-        const { data: newStreak, error: createError } = await supabase
-          .from('user_streaks')
-          .insert([defaultStreak])
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        return newStreak as UserStreak;
-      }
-
-      return streak as UserStreak;
-    },
+  const { data: streakData } = useQuery({
+    queryKey: ['streak'],
+    queryFn: fetchStreak
   });
 
-  const { data: meals = [] } = useQuery<MealData[]>({
+  const { data: meals = [] } = useQuery({
     queryKey: ['meals', format(today, 'yyyy-MM-dd'), activeTab],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-      const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
-      
-      if (activeTab === 'today') {
-        const { data, error } = await supabase
-          .from('meal_analysis_history')
-          .select('*')
-          .eq('user_id', user.id)
-          .gte('created_at', startOfDay)
-          .lte('created_at', endOfDay);
-          
-        if (error) throw error;
-        return (data || []) as MealData[];
-      } else {
-        const { data, error } = await supabase
-          .from('meal_analysis_history')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(10);
-          
-        if (error) throw error;
-        return (data || []) as MealData[];
-      }
-    },
-    initialData: [],
+    queryFn: fetchMeals,
+    initialData: [] as MealData[]
   });
 
   const consumedMacros: MacroSummary = meals.reduce((acc, meal) => ({
