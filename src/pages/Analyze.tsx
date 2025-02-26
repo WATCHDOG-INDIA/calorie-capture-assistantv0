@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
-import ImageUpload from '@/components/ImageUpload';
-import NutritionCard from '@/components/NutritionCard';
-import ResultsPopup from '@/components/ResultsPopup';
-import { analyzeImage } from '@/lib/gemini';
-import { toast } from '@/components/ui/use-toast';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { analyzeImage } from '@/lib/gemini';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import useSound from 'use-sound';
@@ -24,13 +20,36 @@ interface NutritionInfo {
 const Analyze = () => {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [nutritionInfo, setNutritionInfo] = useState<NutritionInfo | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showResults, setShowResults] = useState(false);
   const [history, setHistory] = useState<MealHistory[]>([]);
   
   const [playSuccess] = useSound('/sounds/success.mp3');
   const [playAnalyzing] = useSound('/sounds/analyzing.mp3');
+
+  const handleImageSelect = async (file: File) => {
+    try {
+      setIsAnalyzing(true);
+      playAnalyzing();
+      const imageUrl = URL.createObjectURL(file);
+      setSelectedImage(imageUrl);
+      
+      console.log('Starting image analysis...');
+      const nutrition = await analyzeImage(file);
+      console.log('Analysis completed:', nutrition);
+      
+      playSuccess();
+      navigate('/results', { 
+        state: { 
+          ...nutrition,
+          imageUrl
+        } 
+      });
+    } catch (error: any) {
+      console.error('Error analyzing image:', error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   const fetchHistory = async () => {
     const today = new Date();
@@ -79,28 +98,6 @@ const Analyze = () => {
     }
 
     fetchHistory();
-  };
-
-  const handleImageSelect = async (file: File) => {
-    try {
-      setIsAnalyzing(true);
-      playAnalyzing();
-      const imageUrl = URL.createObjectURL(file);
-      setSelectedImage(imageUrl);
-      
-      console.log('Starting image analysis...');
-      const nutrition = await analyzeImage(file);
-      console.log('Analysis completed:', nutrition);
-      
-      setNutritionInfo(nutrition);
-      setShowResults(true);
-      playSuccess();
-    } catch (error: any) {
-      console.error('Error analyzing image:', error);
-      setNutritionInfo(null);
-    } finally {
-      setIsAnalyzing(false);
-    }
   };
 
   return (
@@ -202,19 +199,6 @@ const Analyze = () => {
           </Button>
         </div>
       </div>
-
-      {/* Results Popup */}
-      {nutritionInfo && (
-        <ResultsPopup
-          isOpen={showResults}
-          onClose={() => {
-            setShowResults(false);
-            navigate('/');
-          }}
-          nutrition={nutritionInfo}
-          imageUrl={selectedImage || undefined}
-        />
-      )}
     </div>
   );
 };
