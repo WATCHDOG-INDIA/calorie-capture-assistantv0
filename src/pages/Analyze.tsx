@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Database } from '@/integrations/supabase/types';
 import useSound from 'use-sound';
 import { Sparkles, ArrowLeft, Camera, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useToast, toast } from "@/hooks/use-toast";
 
 type MealHistory = Database['public']['Tables']['meal_analysis_history']['Row'];
 
@@ -146,14 +148,20 @@ const Analyze = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {history.map((item) => (
                 <Card key={item.id} className="p-4 space-y-4">
-                  <NutritionCard
-                    nutrition={{
-                      calories: item.calories,
-                      protein: item.protein,
-                      carbs: item.carbs,
-                      fat: item.fat,
-                    }}
-                  />
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span>Calories: {item.calories}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Protein: {item.protein}g</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Carbs: {item.carbs}g</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Fat: {item.fat}g</span>
+                    </div>
+                  </div>
                 </Card>
               ))}
             </div>
