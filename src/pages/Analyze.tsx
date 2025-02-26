@@ -1,14 +1,16 @@
-
 import React, { useState } from 'react';
+import ImageUpload from '@/components/ImageUpload';
+import NutritionCard from '@/components/NutritionCard';
+import ResultsPopup from '@/components/ResultsPopup';
+import { analyzeImage } from '@/lib/gemini';
+import { toast } from '@/components/ui/use-toast';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { analyzeImage } from '@/lib/gemini';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import useSound from 'use-sound';
 import { Sparkles, ArrowLeft, Camera, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useToast, toast } from "@/hooks/use-toast";
 
 type MealHistory = Database['public']['Tables']['meal_analysis_history']['Row'];
 
@@ -22,36 +24,13 @@ interface NutritionInfo {
 const Analyze = () => {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [nutritionInfo, setNutritionInfo] = useState<NutritionInfo | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const [history, setHistory] = useState<MealHistory[]>([]);
   
   const [playSuccess] = useSound('/sounds/success.mp3');
   const [playAnalyzing] = useSound('/sounds/analyzing.mp3');
-
-  const handleImageSelect = async (file: File) => {
-    try {
-      setIsAnalyzing(true);
-      playAnalyzing();
-      const imageUrl = URL.createObjectURL(file);
-      setSelectedImage(imageUrl);
-      
-      console.log('Starting image analysis...');
-      const nutrition = await analyzeImage(file);
-      console.log('Analysis completed:', nutrition);
-      
-      playSuccess();
-      navigate('/results', { 
-        state: { 
-          ...nutrition,
-          imageUrl
-        } 
-      });
-    } catch (error: any) {
-      console.error('Error analyzing image:', error);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
 
   const fetchHistory = async () => {
     const today = new Date();
@@ -102,6 +81,28 @@ const Analyze = () => {
     fetchHistory();
   };
 
+  const handleImageSelect = async (file: File) => {
+    try {
+      setIsAnalyzing(true);
+      playAnalyzing();
+      const imageUrl = URL.createObjectURL(file);
+      setSelectedImage(imageUrl);
+      
+      console.log('Starting image analysis...');
+      const nutrition = await analyzeImage(file);
+      console.log('Analysis completed:', nutrition);
+      
+      setNutritionInfo(nutrition);
+      setShowResults(true);
+      playSuccess();
+    } catch (error: any) {
+      console.error('Error analyzing image:', error);
+      setNutritionInfo(null);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 relative">
       {/* Header */}
@@ -148,20 +149,14 @@ const Analyze = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {history.map((item) => (
                 <Card key={item.id} className="p-4 space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span>Calories: {item.calories}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Protein: {item.protein}g</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Carbs: {item.carbs}g</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Fat: {item.fat}g</span>
-                    </div>
-                  </div>
+                  <NutritionCard
+                    nutrition={{
+                      calories: item.calories,
+                      protein: item.protein,
+                      carbs: item.carbs,
+                      fat: item.fat,
+                    }}
+                  />
                 </Card>
               ))}
             </div>
@@ -207,6 +202,19 @@ const Analyze = () => {
           </Button>
         </div>
       </div>
+
+      {/* Results Popup */}
+      {nutritionInfo && (
+        <ResultsPopup
+          isOpen={showResults}
+          onClose={() => {
+            setShowResults(false);
+            navigate('/');
+          }}
+          nutrition={nutritionInfo}
+          imageUrl={selectedImage || undefined}
+        />
+      )}
     </div>
   );
 };
