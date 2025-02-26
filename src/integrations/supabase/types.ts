@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      app_users: {
+        Row: {
+          created_at: string | null
+          current_streak: number | null
+          id: string
+          last_login: string | null
+          pin_hash: string
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_login?: string | null
+          pin_hash: string
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_login?: string | null
+          pin_hash?: string
+          username?: string
+        }
+        Relationships: []
+      }
       meal_analysis_history: {
         Row: {
           calories: number
