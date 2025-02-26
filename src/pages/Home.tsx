@@ -1,22 +1,36 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Camera, Flame, Check, Bolt, Circle, Droplet } from 'lucide-react';
+import { Camera, Flame, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
 import MacroCard from '@/components/MacroCard';
-import { toast } from "@/components/ui/use-toast";
 import StreakDialog from '@/components/StreakDialog';
 
+// Define strict types for the streak data
 interface UserStreak {
   id: string;
   created_at: string | null;
   last_visit_date: string;
   current_streak: number;
-  weekly_checkins: any[] | null;
+  weekly_checkins: string[] | null; // Changed from any[] to string[]
   message: string | null;
+  user_id: string;
+}
+
+// Define type for meal data
+interface MealData {
+  id: string;
+  created_at: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  image_url?: string;
+  user_id: string;
 }
 
 const Home = () => {
@@ -37,7 +51,7 @@ const Home = () => {
     checkAuth();
   }, [navigate]);
 
-  const { data: streakData, refetch: refetchStreak } = useQuery({
+  const { data: streakData } = useQuery({
     queryKey: ['streak'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -49,30 +63,30 @@ const Home = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (error) {
-        if (error.code === 'PGRST116') {
-          const defaultStreak = {
-            current_streak: 1,
-            last_visit_date: new Date().toISOString(),
-            weekly_checkins: [],
-            message: "Keep the flame lit every day!",
-            user_id: user.id
-          };
+      if (error) throw error;
 
-          const { data: newStreak, error: createError } = await supabase
-            .from('user_streaks')
-            .insert([defaultStreak])
-            .select()
-            .single();
+      if (!streak) {
+        const defaultStreak: Omit<UserStreak, 'id' | 'created_at'> = {
+          current_streak: 1,
+          last_visit_date: new Date().toISOString(),
+          weekly_checkins: [],
+          message: "Keep the flame lit every day!",
+          user_id: user.id
+        };
 
-          if (createError) throw createError;
-          return newStreak as unknown as UserStreak;
-        }
-        throw error;
+        const { data: newStreak, error: createError } = await supabase
+          .from('user_streaks')
+          .insert([defaultStreak])
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        return newStreak as UserStreak;
       }
-      return streak as unknown as UserStreak;
+
+      return streak as UserStreak;
     },
   });
 
@@ -82,10 +96,10 @@ const Home = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+      const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+      
       if (activeTab === 'today') {
-        const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-        const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
-        
         const { data, error } = await supabase
           .from('meal_analysis_history')
           .select('*')
@@ -94,7 +108,7 @@ const Home = () => {
           .lte('created_at', endOfDay);
           
         if (error) throw error;
-        return data || [];
+        return (data || []) as MealData[];
       } else {
         const { data, error } = await supabase
           .from('meal_analysis_history')
@@ -104,7 +118,7 @@ const Home = () => {
           .limit(10);
           
         if (error) throw error;
-        return data || [];
+        return (data || []) as MealData[];
       }
     },
   });
