@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Flame, Cookie, Beef, Droplet, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 
 interface ResultsPopupProps {
   isOpen: boolean;
@@ -25,6 +27,60 @@ const ResultsPopup: React.FC<ResultsPopupProps> = ({
   imageUrl
 }) => {
   const navigate = useNavigate();
+
+  const saveMealAnalysis = async () => {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "You must be logged in to save meal analysis.",
+        });
+        navigate('/auth');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('meal_analysis_history')
+        .insert({
+          calories: nutrition.calories,
+          protein: nutrition.protein,
+          carbs: nutrition.carbs,
+          fat: nutrition.fat,
+          image_url: imageUrl,
+          user_id: userData.user.id
+        });
+
+      if (error) {
+        console.error('Error saving meal analysis:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to save meal analysis.",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Meal analysis saved successfully!",
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred.",
+      });
+    }
+  };
+
+  const handleDone = async () => {
+    await saveMealAnalysis();
+    onClose();
+    navigate('/');
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -101,10 +157,7 @@ const ResultsPopup: React.FC<ResultsPopupProps> = ({
           </div>
 
           <Button
-            onClick={() => {
-              onClose();
-              navigate('/');
-            }}
+            onClick={handleDone}
             className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-800 dark:hover:bg-gray-700"
           >
             Done

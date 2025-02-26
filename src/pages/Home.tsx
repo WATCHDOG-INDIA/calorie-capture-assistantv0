@@ -10,7 +10,6 @@ import MacroCard from '@/components/MacroCard';
 import { toast } from "@/components/ui/use-toast";
 import StreakDialog from '@/components/StreakDialog';
 
-// Define an interface that matches the structure we need
 interface UserStreak {
   id: string;
   created_at: string | null;
@@ -28,38 +27,43 @@ const Home = () => {
   const [showStreakDialog, setShowStreakDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<'today' | 'recent'>('today');
 
-  // Get current streak using a type assertion
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth');
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
   const { data: streakData, refetch: refetchStreak } = useQuery({
     queryKey: ['streak'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       const { data: streak, error } = await supabase
-        .from('meal_analysis_history')
+        .from('user_streaks')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
 
       if (error) {
         if (error.code === 'PGRST116') {
-          // Create default streak data
           const defaultStreak = {
             current_streak: 1,
             last_visit_date: new Date().toISOString(),
             weekly_checkins: [],
-            message: "Keep the flame lit every day!"
+            message: "Keep the flame lit every day!",
+            user_id: user.id
           };
 
-          // Insert using meal_analysis_history format but store streak data
           const { data: newStreak, error: createError } = await supabase
-            .from('meal_analysis_history')
-            .insert([{
-              calories: 0,
-              protein: 0,
-              carbs: 0,
-              fat: 0,
-              created_at: new Date().toISOString(),
-              ...defaultStreak
-            }])
+            .from('user_streaks')
+            .insert([defaultStreak])
             .select()
             .single();
 
@@ -72,83 +76,12 @@ const Home = () => {
     },
   });
 
-  // Update streak on app open
-  useEffect(() => {
-    const updateStreak = async () => {
-      if (!streakData) return;
-
-      const lastVisit = new Date(streakData.last_visit_date);
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-
-      // Reset format dates to compare only dates without time
-      const lastVisitDate = new Date(lastVisit.toDateString());
-      const todayDate = new Date(today.toDateString());
-      const yesterdayDate = new Date(yesterday.toDateString());
-
-      if (lastVisitDate.getTime() === todayDate.getTime()) {
-        // Already visited today, do nothing
-        return;
-      }
-
-      let newStreak = streakData.current_streak;
-
-      if (lastVisitDate.getTime() === yesterdayDate.getTime()) {
-        // Consecutive day, increment streak
-        newStreak += 1;
-        toast({
-          title: "🔥 Streak increased!",
-          description: `You're on fire! ${newStreak} day streak!`,
-          action: (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setShowStreakDialog(true)}
-            >
-              View Streak
-            </Button>
-          ),
-        });
-      } else if (lastVisitDate.getTime() < yesterdayDate.getTime()) {
-        // Missed a day, reset streak
-        newStreak = 1;
-        toast({
-          variant: "destructive",
-          title: "Streak Reset",
-          description: "You missed a day. Let's start a new streak!",
-        });
-      }
-
-      // Update streak data in the existing table
-      const { error } = await supabase
-        .from('meal_analysis_history')
-        .update({
-          created_at: todayDate.toISOString(),
-          calories: 0,
-          protein: 0,
-          carbs: 0,
-          fat: 0,
-          last_visit_date: todayDate.toISOString(),
-          current_streak: newStreak,
-        })
-        .eq('id', streakData.id);
-
-      if (error) {
-        console.error('Error updating streak:', error);
-        return;
-      }
-
-      refetchStreak();
-    };
-
-    updateStreak();
-  }, [streakData]);
-
-  // Get meals for today and recent meals
   const { data: meals } = useQuery({
     queryKey: ['meals', format(today, 'yyyy-MM-dd'), activeTab],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       if (activeTab === 'today') {
         const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
         const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
@@ -156,6 +89,7 @@ const Home = () => {
         const { data, error } = await supabase
           .from('meal_analysis_history')
           .select('*')
+          .eq('user_id', user.id)
           .gte('created_at', startOfDay)
           .lte('created_at', endOfDay);
           
@@ -165,6 +99,7 @@ const Home = () => {
         const { data, error } = await supabase
           .from('meal_analysis_history')
           .select('*')
+          .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(10);
           
