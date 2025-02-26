@@ -15,17 +15,6 @@ const Auth = () => {
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Check if user is already authenticated
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        navigate('/');
-      }
-    };
-    checkAuth();
-  }, [navigate]);
-
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -70,20 +59,10 @@ const Auth = () => {
 
         if (createError) throw createError;
 
-        // Set auth session
-        const { error: authError } = await supabase.auth.signInWithPassword({
-          email: `${username}@temp.com`,
-          password: pin,
-        });
-
-        if (authError) throw authError;
-
         toast({
           title: "Welcome!",
           description: "Account created successfully",
         });
-
-        navigate('/');
       } else {
         // Login
         const { data: user, error: loginError } = await supabase
@@ -101,14 +80,6 @@ const Auth = () => {
           });
           return;
         }
-
-        // Set auth session
-        const { error: authError } = await supabase.auth.signInWithPassword({
-          email: `${username}@temp.com`,
-          password: pin,
-        });
-
-        if (authError) throw authError;
 
         // Check if 24 hours have passed since last login
         const lastLogin = new Date(user.last_login);
@@ -147,10 +118,9 @@ const Auth = () => {
           title: "Welcome back!",
           description: `Last login: ${format(lastLogin, 'PPpp')}`,
         });
-
-        // Navigate to home after successful login
-        navigate('/');
       }
+
+      navigate('/');
     } catch (error: any) {
       console.error('Auth error:', error);
       toast({
