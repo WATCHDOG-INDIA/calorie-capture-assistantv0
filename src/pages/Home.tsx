@@ -68,7 +68,7 @@ const Home = () => {
     },
   });
 
-  const { data: meals = [] } = useQuery({
+  const { data: meals = [] } = useQuery<MealData[]>({
     queryKey: ['meals', format(today, 'yyyy-MM-dd'), activeTab],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -99,6 +99,7 @@ const Home = () => {
         return (data || []) as MealData[];
       }
     },
+    initialData: [],
   });
 
   const consumedMacros: MacroSummary = meals.reduce((acc, meal) => ({
