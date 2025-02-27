@@ -10,18 +10,17 @@ import { useQuery } from '@tanstack/react-query';
 import MacroCard from '@/components/MacroCard';
 import StreakDialog from '@/components/StreakDialog';
 
-// Define strict types for the streak data
+// Define types explicitly
 interface UserStreak {
   id: string;
-  created_at: string | null;
+  created_at: string;
   last_visit_date: string;
   current_streak: number;
-  weekly_checkins: string[] | null; // Changed from any[] to string[]
+  weekly_checkins: string[];
   message: string | null;
   user_id: string;
 }
 
-// Define type for meal data
 interface MealData {
   id: string;
   created_at: string;
@@ -68,7 +67,7 @@ const Home = () => {
       if (error) throw error;
 
       if (!streak) {
-        const defaultStreak: Omit<UserStreak, 'id' | 'created_at'> = {
+        const defaultStreak = {
           current_streak: 1,
           last_visit_date: new Date().toISOString(),
           weekly_checkins: [],
@@ -87,10 +86,10 @@ const Home = () => {
       }
 
       return streak as UserStreak;
-    },
+    }
   });
 
-  const { data: meals } = useQuery({
+  const { data: meals = [] } = useQuery({
     queryKey: ['meals', format(today, 'yyyy-MM-dd'), activeTab],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -120,11 +119,10 @@ const Home = () => {
         if (error) throw error;
         return (data || []) as MealData[];
       }
-    },
+    }
   });
 
-  // Calculate consumed macros
-  const consumedMacros = meals?.reduce((acc, meal) => ({
+  const consumedMacros = meals.reduce((acc, meal) => ({
     calories: acc.calories + (meal.calories || 0),
     protein: acc.protein + (meal.protein || 0),
     carbs: acc.carbs + (meal.carbs || 0),
@@ -190,7 +188,7 @@ const Home = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-blue-500/10 transform group-hover:scale-105 transition-transform duration-300" />
           <div className="relative">
             <div className="text-6xl font-bold text-green-500 mb-2 animate-pulse">
-              {consumedMacros?.calories || 0}
+              {consumedMacros.calories || 0}
             </div>
             <div className="text-gray-500">Calories consumed</div>
           </div>
@@ -198,21 +196,21 @@ const Home = () => {
 
         <div className="grid grid-cols-3 gap-4">
           <MacroCard
-            value={consumedMacros?.protein || 0}
+            value={consumedMacros.protein || 0}
             label="Protein"
             unit="g"
             color="red"
             icon="bolt"
           />
           <MacroCard
-            value={consumedMacros?.carbs || 0}
+            value={consumedMacros.carbs || 0}
             label="Carbs"
             unit="g"
             color="yellow"
             icon="dots"
           />
           <MacroCard
-            value={consumedMacros?.fat || 0}
+            value={consumedMacros.fat || 0}
             label="Fats"
             unit="g"
             color="blue"
@@ -223,7 +221,7 @@ const Home = () => {
         {/* Recently Added Meals */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Today's Meals</h2>
-          {meals?.map((meal) => (
+          {meals.map((meal) => (
             <Card key={meal.id} className="p-4">
               <div className="flex gap-4 items-center">
                 {meal.image_url && (
@@ -248,7 +246,7 @@ const Home = () => {
               </div>
             </Card>
           ))}
-          {meals?.length === 0 && (
+          {meals.length === 0 && (
             <div className="text-center text-gray-500 py-8">
               No meals logged today
             </div>
