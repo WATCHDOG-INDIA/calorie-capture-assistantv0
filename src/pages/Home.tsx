@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -39,15 +39,11 @@ const Home = () => {
   const [showStreakDialog, setShowStreakDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<'today' | 'recent'>('today');
 
-  // Fetch user streak data
+  // Fetch streak data without auth
   const fetchStreak = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
-
     const { data: streak, error } = await supabase
       .from('user_streaks')
       .select('*')
-      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -60,7 +56,7 @@ const Home = () => {
         last_visit_date: new Date().toISOString(),
         weekly_checkins: [],
         message: "Keep the flame lit every day!",
-        user_id: user.id
+        user_id: 'anonymous'
       };
 
       const { data: newStreak, error: createError } = await supabase
@@ -76,17 +72,6 @@ const Home = () => {
     return streak as UserStreak;
   };
 
-  // Check authentication
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/auth');
-      }
-    };
-    checkAuth();
-  }, [navigate]);
-
   // Use queries
   const { data: streakData } = useQuery({
     queryKey: ['streak'],
@@ -96,9 +81,6 @@ const Home = () => {
   const { data: meals = [] } = useQuery<MealData[]>({
     queryKey: ['meals', format(today, 'yyyy-MM-dd'), activeTab],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
       const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
       const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
       
@@ -106,7 +88,6 @@ const Home = () => {
         const { data, error } = await supabase
           .from('meal_analysis_history')
           .select('*')
-          .eq('user_id', user.id)
           .gte('created_at', startOfDay)
           .lte('created_at', endOfDay);
           
@@ -116,7 +97,6 @@ const Home = () => {
         const { data, error } = await supabase
           .from('meal_analysis_history')
           .select('*')
-          .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(10);
           
@@ -124,18 +104,6 @@ const Home = () => {
         return (data || []) as MealData[];
       }
     }
-  });
-
-  const consumedMacros = meals.reduce((acc, meal) => ({
-    calories: acc.calories + (meal.calories || 0),
-    protein: acc.protein + (meal.protein || 0),
-    carbs: acc.carbs + (meal.carbs || 0),
-    fat: acc.fat + (meal.fat || 0),
-  }), {
-    calories: 0,
-    protein: 0,
-    carbs: 0,
-    fat: 0,
   });
 
   return (
@@ -192,7 +160,7 @@ const Home = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-blue-500/10 transform group-hover:scale-105 transition-transform duration-300" />
           <div className="relative">
             <div className="text-6xl font-bold text-green-500 mb-2 animate-pulse">
-              {consumedMacros.calories || 0}
+              {meals.reduce((total, meal) => total + (meal.calories || 0), 0)}
             </div>
             <div className="text-gray-500">Calories consumed</div>
           </div>
@@ -200,21 +168,21 @@ const Home = () => {
 
         <div className="grid grid-cols-3 gap-4">
           <MacroCard
-            value={consumedMacros.protein || 0}
+            value={meals.reduce((total, meal) => total + (meal.protein || 0), 0)}
             label="Protein"
             unit="g"
             color="red"
             icon="bolt"
           />
           <MacroCard
-            value={consumedMacros.carbs || 0}
+            value={meals.reduce((total, meal) => total + (meal.carbs || 0), 0)}
             label="Carbs"
             unit="g"
             color="yellow"
             icon="dots"
           />
           <MacroCard
-            value={consumedMacros.fat || 0}
+            value={meals.reduce((total, meal) => total + (meal.fat || 0), 0)}
             label="Fats"
             unit="g"
             color="blue"
