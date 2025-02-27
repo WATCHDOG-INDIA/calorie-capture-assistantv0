@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Flame, Cookie, Beef, Droplet, X } from 'lucide-react';
@@ -30,17 +30,6 @@ const ResultsPopup: React.FC<ResultsPopupProps> = ({
 
   const saveMealAnalysis = async () => {
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "You must be logged in to save meal analysis.",
-        });
-        navigate('/auth');
-        return;
-      }
-
       const { error } = await supabase
         .from('meal_analysis_history')
         .insert({
@@ -49,7 +38,7 @@ const ResultsPopup: React.FC<ResultsPopupProps> = ({
           carbs: nutrition.carbs,
           fat: nutrition.fat,
           image_url: imageUrl,
-          user_id: userData.user.id
+          user_id: 'anonymous' // Use anonymous user_id since we removed auth
         });
 
       if (error) {
@@ -85,6 +74,7 @@ const ResultsPopup: React.FC<ResultsPopupProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md p-0 overflow-hidden bg-white dark:bg-gray-900 rounded-2xl">
+        <DialogTitle className="sr-only">Meal Analysis Results</DialogTitle>
         {imageUrl && (
           <div className="relative h-48 bg-gray-100">
             <img
