@@ -38,7 +38,7 @@ const ResultsPopup: React.FC<ResultsPopupProps> = ({
           carbs: nutrition.carbs,
           fat: nutrition.fat,
           image_url: imageUrl,
-          user_id: 'anonymous' // Use anonymous user_id since we removed auth
+          user_id: 'anonymous'
         });
 
       if (error) {
@@ -46,7 +46,7 @@ const ResultsPopup: React.FC<ResultsPopupProps> = ({
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Failed to save meal analysis.",
+          description: "Failed to save meal analysis. Please try again.",
         });
         return;
       }
@@ -55,20 +55,17 @@ const ResultsPopup: React.FC<ResultsPopupProps> = ({
         title: "Success",
         description: "Meal analysis saved successfully!",
       });
+      
+      // Navigate to home after successful save
+      navigate('/');
     } catch (error) {
       console.error('Error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "An unexpected error occurred.",
+        description: "An unexpected error occurred. Please try again.",
       });
     }
-  };
-
-  const handleDone = async () => {
-    await saveMealAnalysis();
-    onClose();
-    navigate('/');
   };
 
   return (
@@ -147,7 +144,7 @@ const ResultsPopup: React.FC<ResultsPopupProps> = ({
           </div>
 
           <Button
-            onClick={handleDone}
+            onClick={saveMealAnalysis}
             className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-800 dark:hover:bg-gray-700"
           >
             Done
