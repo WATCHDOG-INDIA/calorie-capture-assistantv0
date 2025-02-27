@@ -15,6 +15,17 @@ const Auth = () => {
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Check if user is already authenticated
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        navigate('/');
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -26,6 +37,7 @@ const Auth = () => {
           title: "Invalid PIN",
           description: "PIN must be exactly 6 digits",
         });
+        setLoading(false);
         return;
       }
 
@@ -43,6 +55,7 @@ const Auth = () => {
             title: "Username taken",
             description: "Please choose a different username",
           });
+          setLoading(false);
           return;
         }
 
@@ -51,7 +64,7 @@ const Auth = () => {
           .from('app_users')
           .insert({
             username,
-            pin_hash: pin, // In a real app, you'd want to hash this
+            pin_hash: pin,
             last_login: new Date().toISOString(),
           })
           .select()
@@ -63,6 +76,9 @@ const Auth = () => {
           title: "Welcome!",
           description: "Account created successfully",
         });
+        
+        // Redirect after successful signup
+        navigate('/', { replace: true });
       } else {
         // Login
         const { data: user, error: loginError } = await supabase
@@ -78,6 +94,7 @@ const Auth = () => {
             title: "Login failed",
             description: "Invalid username or PIN",
           });
+          setLoading(false);
           return;
         }
 
@@ -88,7 +105,7 @@ const Auth = () => {
 
         if (hoursDiff >= 24) {
           // Update streak and last login
-          const { error: updateError } = await supabase
+          await supabase
             .from('app_users')
             .update({
               current_streak: user.current_streak + 1,
@@ -96,31 +113,28 @@ const Auth = () => {
             })
             .eq('id', user.id);
 
-          if (updateError) throw updateError;
-
           toast({
             title: "Streak increased!",
             description: `You're on a ${user.current_streak + 1} day streak!`,
           });
         } else {
           // Just update last login
-          const { error: updateError } = await supabase
+          await supabase
             .from('app_users')
             .update({
               last_login: now.toISOString(),
             })
             .eq('id', user.id);
-
-          if (updateError) throw updateError;
         }
 
         toast({
           title: "Welcome back!",
           description: `Last login: ${format(lastLogin, 'PPpp')}`,
         });
-      }
 
-      navigate('/');
+        // Redirect after successful login
+        navigate('/', { replace: true });
+      }
     } catch (error: any) {
       console.error('Auth error:', error);
       toast({
