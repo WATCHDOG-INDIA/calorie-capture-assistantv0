@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,7 @@ import MacroCard from '@/components/MacroCard';
 import StreakDialog from '@/components/StreakDialog';
 
 // Define types explicitly
-interface UserStreak {
+type UserStreak = {
   id: string;
   created_at: string;
   last_visit_date: string;
@@ -19,9 +18,9 @@ interface UserStreak {
   weekly_checkins: string[];
   message: string | null;
   user_id: string;
-}
+};
 
-interface MealData {
+type MealData = {
   id: string;
   created_at: string;
   calories: number;
@@ -30,7 +29,7 @@ interface MealData {
   fat: number;
   image_url?: string;
   user_id: string;
-}
+};
 
 const Home = () => {
   const navigate = useNavigate();
@@ -40,6 +39,44 @@ const Home = () => {
   const [showStreakDialog, setShowStreakDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<'today' | 'recent'>('today');
 
+  // Fetch user streak data
+  const fetchStreak = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { data: streak, error } = await supabase
+      .from('user_streaks')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!streak) {
+      const defaultStreak = {
+        current_streak: 1,
+        last_visit_date: new Date().toISOString(),
+        weekly_checkins: [],
+        message: "Keep the flame lit every day!",
+        user_id: user.id
+      };
+
+      const { data: newStreak, error: createError } = await supabase
+        .from('user_streaks')
+        .insert([defaultStreak])
+        .select()
+        .single();
+
+      if (createError) throw createError;
+      return newStreak as UserStreak;
+    }
+
+    return streak as UserStreak;
+  };
+
+  // Check authentication
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -50,46 +87,13 @@ const Home = () => {
     checkAuth();
   }, [navigate]);
 
+  // Use queries
   const { data: streakData } = useQuery({
     queryKey: ['streak'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { data: streak, error } = await supabase
-        .from('user_streaks')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (!streak) {
-        const defaultStreak = {
-          current_streak: 1,
-          last_visit_date: new Date().toISOString(),
-          weekly_checkins: [],
-          message: "Keep the flame lit every day!",
-          user_id: user.id
-        };
-
-        const { data: newStreak, error: createError } = await supabase
-          .from('user_streaks')
-          .insert([defaultStreak])
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        return newStreak as UserStreak;
-      }
-
-      return streak as UserStreak;
-    }
+    queryFn: fetchStreak
   });
 
-  const { data: meals = [] } = useQuery({
+  const { data: meals = [] } = useQuery<MealData[]>({
     queryKey: ['meals', format(today, 'yyyy-MM-dd'), activeTab],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
